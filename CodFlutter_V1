@@ -1,0 +1,36 @@
+import 'dart:typed_data';
+import 'package:flutter/material.dart';
+import 'package:libserialport/libserialport.dart';
+
+void main() => runApp(MyApp());
+
+class MyApp extends StatelessWidget {
+  final String portName = '/dev/ttyACM0'; // ou /dev/ttyUSB0, ver com ls /dev/tty* no terminal. caso de erro de permissão: sudo chmod 666 /dev/ttyACM0
+
+  void enviarComando() {
+    final port = SerialPort(portName);
+
+    if (!port.openReadWrite()) {
+      print('Erro ao abrir porta');
+      return;
+    }
+
+    port.write(Uint8List.fromList([49])); // envia '1'
+    port.close();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(title: Text('Teste Flutter-Arduino')),
+        body: Center(
+          child: ElevatedButton(
+            onPressed: enviarComando,
+            child: Text('Teste 01: Abrir Caixa'),
+          ),
+        ),
+      ),
+    );
+  }
+}
