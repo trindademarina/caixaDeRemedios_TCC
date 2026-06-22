@@ -1,0 +1,93 @@
+import 'package:flutter/material.dart';
+import 'package:bluetooth_serial_android/bluetooth_serial_android.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+      ),
+      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
+  final String title;
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  String status = "Desconectado";
+
+  Future<void> _incrementCounter() async {
+    try {
+      setState(() {
+        status = "Solicitando permissões...";
+      });
+
+      await FlutterBluetoothSerial.ensurePermissions();
+
+      final devices =
+      await FlutterBluetoothSerial.getPairedDevices();
+
+      print(devices);
+
+      final hc05 = devices.firstWhere(
+            (d) => d["name"] == "HC-05",
+      );
+
+      setState(() {
+        status = "Conectando...";
+      });
+
+      await FlutterBluetoothSerial.connect(
+        "00:21:13:02:17:9E",
+      );
+
+      setState(() {
+        status = "Enviando comando...";
+      });
+
+      await FlutterBluetoothSerial.write("1");
+
+      setState(() {
+        status = "Comando enviado!";
+      });
+    } catch (e) {
+      setState(() {
+        status = "Erro: $e";
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("CareBox"),
+      ),
+      body: Center(
+        child: Text(
+          status,
+          style: const TextStyle(fontSize: 20),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _incrementCounter,
+        child: const Icon(Icons.bluetooth),
+      ),
+    );
+  }
+}
